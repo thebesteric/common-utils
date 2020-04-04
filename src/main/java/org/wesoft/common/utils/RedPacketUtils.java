@@ -146,8 +146,8 @@ public class RedPacketUtils {
         double amount = 10;
         int count = 5;
         for (int i = 0; i < 10; i++) {
-            Integer point = RedPacketUtils.unwrap((int) amount, count, false);
-            // Double point = RedPacketUtils.unwrap(amount, count, true);
+            // Integer point = RedPacketUtils.unwrap((int) amount, count, false);
+            Double point = RedPacketUtils.unwrap(amount, count, false);
             System.out.println(point);
             if (point != null && point != 0) {
                 amount -= point;
