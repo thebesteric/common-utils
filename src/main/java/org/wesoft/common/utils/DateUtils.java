@@ -153,7 +153,7 @@ public class DateUtils {
     }
 
     /**
-     * 获取小时（24小时制）
+     * 获取当前小时（24小时制）
      *
      * @param date 日期
      */
@@ -162,6 +162,40 @@ public class DateUtils {
         cal.setTime(date);
         return cal.get(Calendar.HOUR_OF_DAY);
     }
+
+    /**
+     * 获取当前分钟
+     *
+     * @param date 日期
+     */
+    public static int getMinute(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.MINUTE);
+    }
+
+    /**
+     * 获取当前秒
+     *
+     * @param date 日期
+     */
+    public static int getSecond(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.SECOND);
+    }
+
+    /**
+     * 获取当前毫秒
+     *
+     * @param date 日期
+     */
+    public static long getMillis(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.getTimeInMillis();
+    }
+
 
     /**
      * 获取日期的年
