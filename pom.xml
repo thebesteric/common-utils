@@ -102,10 +102,25 @@
             <version>3.4.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.kennycason/kumo -->
+        <dependency>
+            <groupId>com.kennycason</groupId>
+            <artifactId>kumo-core</artifactId>
+            <version>1.22</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.kennycason/kumo -->
+        <dependency>
+            <groupId>com.kennycason</groupId>
+            <artifactId>kumo-tokenizers</artifactId>
+            <version>1.22</version>
         </dependency>
 
     </dependencies>
