@@ -246,15 +246,36 @@ public class FingerPrint {
         return difference;
     }
 
+    /**
+     * 判断两个数组相似度，数组长度必须一致否则抛出异常
+     *
+     * @param f1 数组_1
+     * @param f2 数组_2
+     * @return 返回相似度 ( 0.0 ~ 1.0 )
+     */
+    public static float compare(byte[] f1, byte[] f2) {
+        if (f1.length != f2.length)
+            throw new IllegalArgumentException("Mismatch FingerPrint length");
+        int sameCount = 0;
+        for (int i = 0; i < f1.length; ++i) {
+            if (f1[i] == f2[i])
+                ++sameCount;
+        }
+        return (float) sameCount / f1.length;
+    }
+
     public static void main(String[] args) {
         try {
-            FingerPrint fp0 = new FingerPrint(ImageIO.read(new URL("http://thirdwx.qlogo.cn/mmopen/eLylRtUHQibVjQcuTA6qTiamRV9vzPSx6624AGQt8df2BibFXU5icKiachibG0FSbcTCxxJAzzN2TKzOwOticmT6B3VxcQtlshRyUw0/132")));
+            FingerPrint fp0 = new FingerPrint(ImageIO.read(new URL("http://thirdwx.qlogo.cn/mmopen/bVy2VQVTWzZ8bV6zCuKUfrU5X74nEqV1t2U1xQg8bHCaqCUngXrYf7uDaLjlNyMqFSGeDib78v79gbw41p21GyOSvax38cx0L/132")));
             FingerPrint fp1 = new FingerPrint(ImageIO.read(new URL("http://wx.qlogo.cn/mmhead/ver_1/SkDOvWIeFFcnxkGwv5WIXO8Bsck8zB9Ekye4Zial5OOUo94micVsSulCoTht8spLiaAhI2Kq3qdYFQiaNgOfBHgkIqrxibOUDugZV2wt9f2m2Zsw/132")));
             System.out.println(fp0.toString(true));
             System.out.println(fp1.toString(true));
 
             int difference = hammingDistance(fp0.toString(), fp1.toString());
-            System.out.print("汉明距离:" + difference);
+            System.out.println("汉明距离 = " + difference);
+
+            float compare = compare(fp0.toString().getBytes(), fp1.toString().getBytes());
+            System.out.println("compare = " + compare);
 
         } catch (IOException e) {
             e.printStackTrace();
