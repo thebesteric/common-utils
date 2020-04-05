@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -190,6 +191,23 @@ public class ImageUtils {
             inputStream.read(bytes);
             inputStream.close();
             return "data:image/png;base64," + Base64.encodeBase64String(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 图片转 base64 字符串
+     *
+     * @param bufferedImage bufferedImage
+     */
+    public static String imageToBase64(BufferedImage bufferedImage) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(bufferedImage, "png", os);
+            InputStream in = new ByteArrayInputStream(os.toByteArray());
+            return imageToBase64(in);
         } catch (IOException e) {
             e.printStackTrace();
         }
