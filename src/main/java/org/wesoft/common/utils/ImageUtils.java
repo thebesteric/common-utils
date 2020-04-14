@@ -275,6 +275,9 @@ public class ImageUtils {
     public static InputStream base64ToInputStream(String base64Str) {
         ByteArrayInputStream stream = null;
         try {
+            if (base64Str.contains(",")) {
+                base64Str = base64Str.substring(base64Str.indexOf(",") + 1);
+            }
             byte[] bytes = Base64.decodeBase64(base64Str);
             stream = new ByteArrayInputStream(bytes);
         } catch (Exception ex) {
