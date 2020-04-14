@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -266,6 +265,22 @@ public class ImageUtils {
         }
 
         return false;
+    }
+
+    /**
+     * base64 字符串转输入流
+     *
+     * @param base64Str base64Code
+     */
+    public static InputStream base64ToInputStream(String base64Str) {
+        ByteArrayInputStream stream = null;
+        try {
+            byte[] bytes = Base64.decodeBase64(base64Str);
+            stream = new ByteArrayInputStream(bytes);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return stream;
     }
 
     /**
