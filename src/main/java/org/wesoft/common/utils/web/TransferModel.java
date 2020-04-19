@@ -24,6 +24,10 @@ public class TransferModel extends HashMap<String, Object> implements Serializab
     // Object
     private static final String OBJECT = "object";
 
+    public Class<?> objectClazz;
+
+    public Class<?> entryClazz;
+
     public <T> TransferModel(Entry<String, T> entry) {
         setEntry(entry);
     }
@@ -33,6 +37,7 @@ public class TransferModel extends HashMap<String, Object> implements Serializab
     }
 
     public <T> void setEntry(Entry<String, T> entry) {
+        this.entryClazz = entry.getValue().getClass();
         this.put(ENTRY, entry);
     }
 
@@ -42,6 +47,7 @@ public class TransferModel extends HashMap<String, Object> implements Serializab
     }
 
     public <T> void setObject(T object) {
+        this.objectClazz = object.getClass();
         this.put(OBJECT, object);
     }
 
