@@ -84,6 +84,18 @@ public class R extends LinkedHashMap<String, Object> {
         return this;
     }
 
+    public R setCode(HttpStatusCode httpStatusCode) {
+        return this.put(R.CODE_KEY, httpStatusCode.code).put(R.MESSAGE_KEY, R.SUCCESS_CODE.message);
+    }
+
+    public R setMessage(String message) {
+        return this.put(R.MESSAGE_KEY, message);
+    }
+
+    public R setCodeAndMessage(HttpStatusCode httpStatusCode, String message) {
+        return this.put(R.CODE_KEY, httpStatusCode.code).put(R.MESSAGE_KEY, message != null ? message : httpStatusCode.message);
+    }
+
     public R put(String key, Object value) {
         super.put(key, value);
         return this;
@@ -101,8 +113,7 @@ public class R extends LinkedHashMap<String, Object> {
     }
 
     public static R success(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
-        return R.newInstance().put(R.CODE_KEY, R.SUCCESS_CODE.code)
-                .put(R.DATE_KEY, LocalDateTime.now(ZoneOffset.of("+8")).format(formatter)).put(R.MESSAGE_KEY, R.SUCCESS_CODE.message).setCharacterEncoding(request, response);
+        return success().setCharacterEncoding(request, response);
     }
 
 
@@ -134,6 +145,10 @@ public class R extends LinkedHashMap<String, Object> {
     public static R success(String message, Object object) {
         return R.newInstance().put(R.CODE_KEY, R.SUCCESS_CODE.code)
                 .put(R.DATE_KEY, LocalDateTime.now(ZoneOffset.of("+8")).format(formatter)).put(R.MESSAGE_KEY, message).put(R.OBJECT_KEY, object);
+    }
+
+    public static R error(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+        return error().setCharacterEncoding(request, response);
     }
 
     public static R error() {
