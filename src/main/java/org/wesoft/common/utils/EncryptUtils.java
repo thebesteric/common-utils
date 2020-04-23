@@ -1,6 +1,8 @@
 package org.wesoft.common.utils;
 
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
@@ -174,17 +176,7 @@ public class EncryptUtils {
      * @param res 需要加密的原文
      */
     public String MD5(String res) {
-        return messageDigest(res, MD5);
-    }
-
-    /**
-     * md5 加密算法进行加密（不可逆）
-     *
-     * @param res 需要加密的原文
-     * @param key 秘钥
-     */
-    public String MD5(String res, String key) {
-        return keyGeneratorMac(res, HmacMD5, key);
+        return DigestUtils.md5Hex(res);
     }
 
     /**
