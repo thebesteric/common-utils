@@ -179,6 +179,10 @@ public class EncryptUtils {
         return DigestUtils.md5Hex(res);
     }
 
+    public String MD5_16(String res) {
+        return DigestUtils.md5Hex(res).substring(8, 24);
+    }
+
     /**
      * 使用 SHA1 加密算法进行加密（不可逆）
      *
