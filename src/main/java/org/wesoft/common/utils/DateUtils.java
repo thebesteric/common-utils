@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -689,6 +690,16 @@ public class DateUtils {
      */
     public static LocalDateTime getLocalDateTime(Date date) {
         return date != null ? date.toInstant().atOffset(ZoneOffset.of("+8")).toLocalDateTime() : null;
+    }
+
+    /**
+     * 获取本地时间
+     *
+     * @param date 日期
+     */
+    public static Date getLocalDate(Date date) {
+        LocalDateTime localDateTime = getLocalDateTime(date);
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     /**
