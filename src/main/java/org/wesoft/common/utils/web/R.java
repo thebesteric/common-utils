@@ -37,7 +37,7 @@ public class R extends LinkedHashMap<String, Object> {
         MANY_CHOICE(300, "MANY CHOICE", "多种选择"), FOREVER_MOVED(301, "FOREVER MOVED", "永久移动"), TEMP_MOVED(302, "TEMP MOVED", "临时移动"),
         LOOK_FOR_OTHER(303, "LOOK FOR OTHER", "查看其他位置"), UN_MODIFY(304, "UN MODIFY", "未修改"),
         USE_PROXY(305, "USE PROXY", "使用代理"), TEMP_REDIRECT(307, "TEMP REDIRECT", "临时重定向"),
-        REQUEST_ERROR(400, "REQUEST ERROR", "错误请求"), UN_AUTH(401, "UN AUTH", "未授权"),
+        REQUEST_ERROR(400, "REQUEST ERROR", "错误请求"), UN_AUTH(401, "UN AUTH", "未授权"), VALIDATE_ERROR(402, "VALIDATE_ERROR", "校验错误"),
         FORBIDDEN(403, "FORBIDDEN", "禁止"), NOT_FOUND(404, "NOT FOUND", "未找到"),
         METHOD_NOT_ALLOW(405, "METHOD NOT ALLOW", "方法禁用"), UN_ACCEPT(406, "UN ACCEPT", "不接受"),
         NEED_PROXY_AUTH(407, "NEED PROXY AUTH", "需要代理授权"), TIMEOUT(408, "TIMEOUT", "请求超时"),
