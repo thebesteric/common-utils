@@ -266,8 +266,12 @@ public class FingerPrint {
 
     public static void main(String[] args) {
         try {
-            FingerPrint fp0 = new FingerPrint(ImageIO.read(new URL("http://thirdwx.qlogo.cn/mmopen/bVy2VQVTWzZ8bV6zCuKUfrU5X74nEqV1t2U1xQg8bHCaqCUngXrYf7uDaLjlNyMqFSGeDib78v79gbw41p21GyOSvax38cx0L/132")));
-            FingerPrint fp1 = new FingerPrint(ImageIO.read(new URL("http://wx.qlogo.cn/mmhead/ver_1/SkDOvWIeFFcnxkGwv5WIXO8Bsck8zB9Ekye4Zial5OOUo94micVsSulCoTht8spLiaAhI2Kq3qdYFQiaNgOfBHgkIqrxibOUDugZV2wt9f2m2Zsw/132")));
+            // FingerPrint fp0 = new FingerPrint(ImageIO.read(new URL("http://thirdwx.qlogo.cn/mmopen/bVy2VQVTWzZ8bV6zCuKUfrU5X74nEqV1t2U1xQg8bHCaqCUngXrYf7uDaLjlNyMqFSGeDib78v79gbw41p21GyOSvax38cx0L/132")));
+            // FingerPrint fp1 = new FingerPrint(ImageIO.read(new URL("http://wx.qlogo.cn/mmhead/ver_1/SkDOvWIeFFcnxkGwv5WIXO8Bsck8zB9Ekye4Zial5OOUo94micVsSulCoTht8spLiaAhI2Kq3qdYFQiaNgOfBHgkIqrxibOUDugZV2wt9f2m2Zsw/132")));
+
+            FingerPrint fp0 = new FingerPrint(ImageIO.read(new File("D:\\logs\\1.jpeg")));
+            FingerPrint fp1 = new FingerPrint(ImageIO.read(new File("D:\\logs\\2.jpg")));
+
             System.out.println(fp0.toString(true));
             System.out.println(fp1.toString(true));
 

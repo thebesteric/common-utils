@@ -3,14 +3,18 @@ package org.wesoft.common.utils;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.*;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class EncryptUtils {
@@ -298,4 +302,5 @@ public class EncryptUtils {
     public String Base64Decode(String res) {
         return new String(Base64.getDecoder().decode(res));
     }
+
 }
