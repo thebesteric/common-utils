@@ -22,7 +22,7 @@ public class R extends HashMap<String, Object> {
     private static final String CODE_KEY = "code";
     private static final String DATA_KEY = "data";
     private static final String TIMESTAMP_KEY = "timestamp";
-    private static final String MESSAGE_KEY = "msg";
+    private static final String MESSAGE_KEY = "message";
     private static final String ZONE_OFFSET = "+8";
 
     public static R newInstance() {
