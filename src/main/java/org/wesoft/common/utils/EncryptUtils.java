@@ -33,7 +33,7 @@ public class EncryptUtils {
     /** AES */
     public int keySizeAES = 128;
 
-    public static EncryptUtils instance;
+    public volatile static EncryptUtils instance;
 
     private EncryptUtils() {
         super();
