@@ -1,7 +1,5 @@
 package org.wesoft.common.utils;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * 持续时间计算工具类
  *
@@ -22,10 +20,8 @@ public class DurationWatch {
         return System.currentTimeMillis() - TIME_THREAD_LOCAL.get();
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        DurationWatch.start();
-        TimeUnit.SECONDS.sleep(5);
-        System.out.println(DurationWatch.stop());
+    public static long getStartTime() {
+        return TIME_THREAD_LOCAL.get();
     }
 
 }

@@ -3,9 +3,8 @@ package org.wesoft.common.utils.web;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import lombok.Cleanup;
+import lombok.Builder;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -14,6 +13,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
@@ -65,31 +65,47 @@ public class HttpUtils {
     private static CloseableHttpClient sslHttpClient;
     private static CloseableHttpClient httpClient;
 
-    private volatile static HttpUtils instance;
-
     private HttpUtils() {
-        super();
+        initPool(HttpUtilsConfig.builder().build());
     }
 
-    public static HttpUtils getInstance(int maxTotal, int maxPreRoute, int connectTimeout, int socketTimeout, int connectionRequestTimeout, int validateAfterInactivity) {
-        if (instance == null) {
-            synchronized (HttpUtils.class) {
-                if (instance == null)
-                    initPool(maxTotal, maxPreRoute, connectTimeout, socketTimeout, connectionRequestTimeout, validateAfterInactivity);
-            }
-        }
-        return instance;
+    public HttpUtils(HttpUtilsConfig config) {
+        initPool(config);
     }
 
-    private static void initPool(int maxTotal, int maxPreRoute, int connectTimeout, int socketTimeout, int connectionRequestTimeout, int validateAfterInactivity) {
+    public static HttpUtils getInstance() {
+        return Holder.instance;
+    }
+
+    private static class Holder {
+        private static HttpUtils instance = new HttpUtils();
+    }
+
+    @Builder
+    public static class HttpUtilsConfig {
+        @Builder.Default
+        private int maxTotal = 200;
+        @Builder.Default
+        private int maxPreRoute = 50;
+        @Builder.Default
+        private int connectTimeout = 5000;
+        @Builder.Default
+        private int socketTimeout = 10000;
+        @Builder.Default
+        private int connectionRequestTimeout = 2000;
+        @Builder.Default
+        private int validateAfterInactivity = 30000;
+    }
+
+    private void initPool(HttpUtilsConfig config) {
         connMgr = new PoolingHttpClientConnectionManager(); // 设置连接池
-        connMgr.setMaxTotal(maxTotal);  // 设置整个连接池最大连接数
-        connMgr.setDefaultMaxPerRoute(maxPreRoute); // 设置每个主机地址的并发数
-        connMgr.setValidateAfterInactivity(validateAfterInactivity);
+        connMgr.setMaxTotal(config.maxTotal);  // 设置整个连接池最大连接数
+        connMgr.setDefaultMaxPerRoute(config.maxPreRoute); // 设置每个主机地址的并发数
+        connMgr.setValidateAfterInactivity(config.validateAfterInactivity);
         RequestConfig.Builder configBuilder = RequestConfig.custom();
-        configBuilder.setConnectTimeout(connectTimeout); // 设置连接超时
-        configBuilder.setSocketTimeout(socketTimeout); // 设置读取超时
-        configBuilder.setConnectionRequestTimeout(connectionRequestTimeout); // 设置从连接池获取连接实例的超时
+        configBuilder.setConnectTimeout(config.connectTimeout); // 设置连接超时
+        configBuilder.setSocketTimeout(config.socketTimeout); // 设置读取超时
+        configBuilder.setConnectionRequestTimeout(config.connectionRequestTimeout); // 设置从连接池获取连接实例的超时
         requestConfig = configBuilder.build();
 
         keepAliveStrategy = (response, context) -> {
@@ -121,7 +137,9 @@ public class HttpUtils {
             return sslHttpClient;
         } else {
             if (httpClient == null)
-                httpClient = HttpClients.createDefault();
+                httpClient = HttpClients.custom().setConnectionManager(connMgr).setConnectionManagerShared(true)
+                        .setDefaultRequestConfig(requestConfig)
+                        .setKeepAliveStrategy(keepAliveStrategy).build();
             return httpClient;
         }
     }
@@ -163,6 +181,7 @@ public class HttpUtils {
         }
         apiUrl += param;
         String httpStr = null;
+        int statusCode = 0;
         CloseableHttpClient httpClient = getCloseableHttpClient(apiUrl);
 
         HttpGet httpGet = new HttpGet(apiUrl);
@@ -173,6 +192,7 @@ public class HttpUtils {
             }
 
             HttpResponse response = httpClient.execute(httpGet);
+            statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 try (InputStream inputStream = entity.getContent()) {
@@ -189,7 +209,7 @@ public class HttpUtils {
                 e.printStackTrace();
             }
         }
-        return handleJsonObject(httpStr);
+        return handleJsonObject(statusCode, httpStr);
     }
 
     /**
@@ -212,6 +232,7 @@ public class HttpUtils {
     public JSONObject doPost(String url, Map<String, Object> params, Map<String, String> headers) {
         CloseableHttpClient httpClient = getCloseableHttpClient(url);
         String httpStr = null;
+        int statusCode = 0;
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(requestConfig);
         CloseableHttpResponse response = null;
@@ -233,6 +254,7 @@ public class HttpUtils {
             }
 
             response = httpClient.execute(httpPost);
+            statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             httpStr = EntityUtils.toString(entity, "UTF-8");
 
@@ -250,7 +272,7 @@ public class HttpUtils {
                 }
             }
         }
-        return handleJsonObject(httpStr);
+        return handleJsonObject(statusCode, httpStr);
     }
 
     /**
@@ -298,6 +320,32 @@ public class HttpUtils {
     /**
      * 发送 POST 请求
      *
+     * @param url      url
+     * @param paramKey 参数名
+     * @param in       输入流
+     * @param fileName 文件名称
+     */
+    public JSONObject doPost(String url, String paramKey, InputStream in, String fileName) throws IOException {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.setConfig(requestConfig);
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addBinaryBody(paramKey, in, ContentType.MULTIPART_FORM_DATA, fileName);
+        HttpEntity entity = builder.build();
+        httpPost.setEntity(entity);
+
+        HttpResponse response = httpClient.execute(httpPost);
+        HttpEntity responseEntity = response.getEntity();
+        if (responseEntity != null) {
+            String result = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            return JSON.parseObject(result);
+        }
+        return null;
+    }
+
+    /**
+     * 发送 POST 请求
+     *
      * @param url     url
      * @param json    JSONObject
      * @param headers headers
@@ -308,6 +356,7 @@ public class HttpUtils {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(requestConfig);
         CloseableHttpResponse response = null;
+        int statusCode = 0;
         try {
             StringEntity stringEntity = new StringEntity(json.toString(), "UTF-8"); // 解决中文乱码问题
             stringEntity.setContentEncoding("UTF-8");
@@ -319,6 +368,7 @@ public class HttpUtils {
             }
 
             response = httpClient.execute(httpPost);
+            statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             httpStr = EntityUtils.toString(entity, "UTF-8");
         } catch (IOException e) {
@@ -335,13 +385,14 @@ public class HttpUtils {
                 }
             }
         }
-        return handleJsonObject(httpStr);
+        return handleJsonObject(statusCode, httpStr);
     }
 
-    private static JSONObject handleJsonObject(String httpStr) {
+    private static JSONObject handleJsonObject(int code, String httpStr) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject = JSON.parseObject(httpStr);
+            jsonObject.put("code", code);
         } catch (Exception ex) {
             jsonObject.put("source", httpStr);
         }
@@ -386,11 +437,13 @@ public class HttpUtils {
         httpPost.setConfig(requestConfig);
         CloseableHttpResponse response = null;
         String httpStr = null;
+        int statusCode = 0;
         try {
             FileBody fileBody = new FileBody(file);
             HttpEntity reqEntity = MultipartEntityBuilder.create().addPart(filename, fileBody).build();
             httpPost.setEntity(reqEntity);
             response = httpClient.execute(httpPost);
+            statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             httpStr = EntityUtils.toString(entity, "UTF-8");
         } catch (IOException e) {
@@ -407,7 +460,7 @@ public class HttpUtils {
                 }
             }
         }
-        return handleJsonObject(httpStr);
+        return handleJsonObject(statusCode, httpStr);
     }
 
     /**

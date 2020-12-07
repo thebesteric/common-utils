@@ -189,7 +189,7 @@ public class ImageUtils {
             byte[] bytes = new byte[inputStream.available()];
             inputStream.read(bytes);
             inputStream.close();
-            return "data:image/png;base64," + Base64.encodeBase64String(bytes);
+            return Base64.encodeBase64String(bytes);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -272,7 +272,7 @@ public class ImageUtils {
      *
      * @param base64Str base64Code
      */
-    public static InputStream base64ToInputStream(String base64Str) {
+    public static ByteArrayInputStream base64ToInputStream(String base64Str) {
         ByteArrayInputStream stream = null;
         try {
             if (base64Str.contains(",")) {
