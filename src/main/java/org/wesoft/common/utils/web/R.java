@@ -40,6 +40,7 @@ public class R extends HashMap<String, Object> {
         return this.get(DATA_KEY);
     }
 
+    /* create a new key in data */
     public R set(String key, Object value) {
         Map<String, Object> object = (Map) super.get(DATA_KEY);
         if (object == null) {
@@ -50,6 +51,7 @@ public class R extends HashMap<String, Object> {
         return this;
     }
 
+    /* create a new key in root */
     public R put(String key, Object data) {
         super.put(key, data);
         return this;

@@ -388,11 +388,12 @@ public class HttpUtils {
         return handleJsonObject(statusCode, httpStr);
     }
 
-    private static JSONObject handleJsonObject(int code, String httpStr) {
+    private static JSONObject handleJsonObject(int statusCode, String httpStr) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject = JSON.parseObject(httpStr);
-            jsonObject.put("code", code);
+            Object code = jsonObject.get("code");
+            jsonObject.put("code", code != null ? code : statusCode);
         } catch (Exception ex) {
             jsonObject.put("source", httpStr);
         }
