@@ -357,13 +357,36 @@ public class ImageUtils {
                 .outputFormat((suffix != null && suffix.length > 0) ? suffix[0] : "jpg").toFile(destImg);
     }
 
+    /**
+     * 图片旋转
+     *
+     * @param sourceImgPath 被旋转图片
+     * @param angel         旋转角度
+     */
     public static BufferedImage rotate(String sourceImgPath, int angel) throws IOException {
         File sourceImgFile = new File(sourceImgPath);
         return rotate(sourceImgFile, angel);
     }
 
+    /**
+     * 图片旋转
+     *
+     * @param sourceImgFile 被旋转图片
+     * @param angel         旋转角度
+     */
     public static BufferedImage rotate(File sourceImgFile, int angel) throws IOException {
         Image image = ImageIO.read(sourceImgFile);
+        return rotate(image, angel);
+    }
+
+    /**
+     * 图片旋转
+     *
+     * @param sourceInputStream 被旋转图片
+     * @param angel             旋转角度
+     */
+    public static BufferedImage rotate(InputStream sourceInputStream, int angel) throws IOException {
+        Image image = ImageIO.read(sourceInputStream);
         return rotate(image, angel);
     }
 
