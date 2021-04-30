@@ -357,14 +357,120 @@ public class ImageUtils {
                 .outputFormat((suffix != null && suffix.length > 0) ? suffix[0] : "jpg").toFile(destImg);
     }
 
+    public static BufferedImage rotate(String sourceImgPath, int angel) throws IOException {
+        File sourceImgFile = new File(sourceImgPath);
+        return rotate(sourceImgFile, angel);
+    }
+
+    public static BufferedImage rotate(File sourceImgFile, int angel) throws IOException {
+        Image image = ImageIO.read(sourceImgFile);
+        return rotate(image, angel);
+    }
+
+    /**
+     * 图片旋转
+     *
+     * @param src   被旋转图片
+     * @param angel 旋转角度
+     */
+    public static BufferedImage rotate(Image src, int angel) {
+        int src_width = src.getWidth(null);
+        int src_height = src.getHeight(null);
+        // calculate the new image size
+        Rectangle rect_des = calcRotatedSize(new Rectangle(new Dimension(
+                src_width, src_height)), angel);
+
+        BufferedImage res = null;
+        res = new BufferedImage(rect_des.width, rect_des.height,
+                BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g2 = res.createGraphics();
+        // transform
+        g2.translate((rect_des.width - src_width) / 2, (rect_des.height - src_height) / 2);
+        g2.rotate(Math.toRadians(angel), src_width / 2.0, src_height / 2.0);
+
+        g2.drawImage(src, null, null);
+        return res;
+    }
+
+    /**
+     * 计算旋转后的图片
+     *
+     * @param src   Rectangle
+     * @param angel 角度
+     */
+    private static Rectangle calcRotatedSize(Rectangle src, int angel) {
+        // if angel is greater than 90 degree, we need to do some conversion
+        if (angel >= 90) {
+            if (angel / 90 % 2 == 1) {
+                int temp = src.height;
+                src.height = src.width;
+                src.width = temp;
+            }
+            angel = angel % 90;
+        }
+
+        double r = Math.sqrt(src.height * src.height + src.width * src.width) / 2;
+        double len = 2 * Math.sin(Math.toRadians(angel) / 2) * r;
+        double angel_alpha = (Math.PI - Math.toRadians(angel)) / 2;
+        double angel_dalta_width = Math.atan((double) src.height / src.width);
+        double angel_dalta_height = Math.atan((double) src.width / src.height);
+
+        int len_dalta_width = (int) (len * Math.cos(Math.PI - angel_alpha
+                - angel_dalta_width));
+        len_dalta_width = len_dalta_width > 0 ? len_dalta_width : -len_dalta_width;
+
+        int len_dalta_height = (int) (len * Math.cos(Math.PI - angel_alpha
+                - angel_dalta_height));
+        len_dalta_height = len_dalta_height > 0 ? len_dalta_height : -len_dalta_height;
+
+        int des_width = src.width + len_dalta_width * 2;
+        int des_height = src.height + len_dalta_height * 2;
+        des_width = des_width > 0 ? des_width : -des_width;
+        des_height = des_height > 0 ? des_height : -des_height;
+        return new java.awt.Rectangle(new Dimension(des_width, des_height));
+    }
+
+    /**
+     * BufferedImage 转 InputStream
+     *
+     * @param image BufferedImage
+     */
+    public static InputStream bufferedImageToInputStream(BufferedImage image) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(image, "png", os);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ByteArrayInputStream(os.toByteArray());
+    }
+
 
     public static void main(String[] args) throws Exception {
-        watermark("d://test.jpg", "d://1.jpg", "d://test123.jpg", 180, 300, 1f);
+        // watermark("d://test.jpg", "d://1.jpg", "d://test123.jpg", 180, 300, 1f);
         // watermark("d://test.jpg", "Made by Taurus", "d://test.jpg", "宋体", Font.BOLD | Font.ITALIC, 20, Color.BLACK, 0, 0, 0.5f);
         // thumbnails("D:\\upload\\_avatar\\2018-05-15\\fd3596ed-acdc-46f5-a47d-8bbcc21e6048.jpg",
         // "D:\\\\upload\\\\_avatar\\\\2018-05-15\\thumbnails.jpg", 0.25, Positions.CENTER);
         // thumbnails("D:\\upload\\_avatar\\2018-05-15\\fd3596ed-acdc-46f5-a47d-8bbcc21e6048.jpg",
         // "D:\\\\upload\\\\_avatar\\\\2018-05-15\\output1.jpg", 0.25, 1);
+
+        // BufferedImage bufferedImage = rotate("D:\\Work\\达能\\breast coach\\AI\\test.png", 90);
+        // InputStream inputStream = bufferedImageToInputStream(bufferedImage);
+        //
+        // ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        // byte[] buffer = new byte[1024];
+        // int len = 0;
+        // while( (len=inputStream.read(buffer)) != -1 ){
+        //     outStream.write(buffer, 0, len);
+        // }
+        // inputStream.close();
+        //
+        // byte[] data = outStream.toByteArray();
+        // File imageFile = new File("D:\\Work\\达能\\breast coach\\AI\\test-90.png");
+        // FileOutputStream fileOutStream = new FileOutputStream(imageFile);
+        // fileOutStream .write(data);
+
     }
+
 
 }
