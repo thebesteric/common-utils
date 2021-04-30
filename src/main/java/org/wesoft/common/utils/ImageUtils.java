@@ -492,6 +492,7 @@ public class ImageUtils {
         // File imageFile = new File("D:\\Work\\达能\\breast coach\\AI\\test-90.png");
         // FileOutputStream fileOutStream = new FileOutputStream(imageFile);
         // fileOutStream .write(data);
+        // fileOutStream.close();
 
     }
 
