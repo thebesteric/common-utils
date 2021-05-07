@@ -4,6 +4,7 @@ import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 import net.coobird.thumbnailator.geometry.Position;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -468,6 +469,31 @@ public class ImageUtils {
         return new ByteArrayInputStream(os.toByteArray());
     }
 
+    /**
+     * InputStream 转 bytes
+     *
+     * @param in InputStream
+     */
+    public byte[] inputStreamToBytes(InputStream in) {
+        byte[] buffer = null;
+        try {
+            if (in != null) {
+                buffer = IOUtils.toByteArray(in);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return buffer;
+    }
+
+    /**
+     * bytes 转 InputStream
+     *
+     * @param bytes byte[]
+     */
+    public InputStream bytesToInputStream(byte[] bytes) {
+        return new ByteArrayInputStream(bytes);
+    }
 
     public static void main(String[] args) throws Exception {
         // watermark("d://test.jpg", "d://1.jpg", "d://test123.jpg", 180, 300, 1f);
