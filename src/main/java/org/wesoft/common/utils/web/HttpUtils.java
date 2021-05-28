@@ -85,29 +85,34 @@ public class HttpUtils {
     @Builder
     public static class HttpUtilsConfig {
         @Builder.Default
-        private int maxTotal = 200;
+        private final int maxTotal = 200;
         @Builder.Default
-        private int maxPreRoute = 50;
+        private final int maxPreRoute = 50;
         @Builder.Default
-        private int connectTimeout = 5000;
+        private final int connectTimeout = 5000;
         @Builder.Default
-        private int socketTimeout = 10000;
+        private final int socketTimeout = 10000;
         @Builder.Default
-        private int connectionRequestTimeout = 2000;
+        private final int connectionRequestTimeout = 2000;
         @Builder.Default
-        private int validateAfterInactivity = 30000;
-
+        private final int validateAfterInactivity = 30000;
     }
 
     private void initPool(HttpUtilsConfig config) {
-        connMgr = new PoolingHttpClientConnectionManager(); // 设置连接池
-        connMgr.setMaxTotal(config.maxTotal);  // 设置整个连接池最大连接数
-        connMgr.setDefaultMaxPerRoute(config.maxPreRoute); // 设置每个主机地址的并发数
+        // 设置连接池
+        connMgr = new PoolingHttpClientConnectionManager();
+        // 设置整个连接池最大连接数
+        connMgr.setMaxTotal(config.maxTotal);
+        // 设置每个主机地址的并发数
+        connMgr.setDefaultMaxPerRoute(config.maxPreRoute);
         connMgr.setValidateAfterInactivity(config.validateAfterInactivity);
         RequestConfig.Builder configBuilder = RequestConfig.custom();
-        configBuilder.setConnectTimeout(config.connectTimeout); // 设置连接超时
-        configBuilder.setSocketTimeout(config.socketTimeout); // 设置读取超时
-        configBuilder.setConnectionRequestTimeout(config.connectionRequestTimeout); // 设置从连接池获取连接实例的超时
+        // 设置连接超时
+        configBuilder.setConnectTimeout(config.connectTimeout);
+        // 设置读取超时
+        configBuilder.setSocketTimeout(config.socketTimeout);
+        // 设置从连接池获取连接实例的超时
+        configBuilder.setConnectionRequestTimeout(config.connectionRequestTimeout);
         requestConfig = configBuilder.build();
 
         keepAliveStrategy = (response, context) -> {
@@ -116,7 +121,7 @@ public class HttpUtils {
                 HeaderElement he = it.nextElement();
                 String param = he.getName();
                 String value = he.getValue();
-                if (value != null && param.equalsIgnoreCase("timeout")) {
+                if (value != null && "timeout".equalsIgnoreCase(param)) {
                     return Long.parseLong(value) * 1000;
                 }
             }
@@ -145,10 +150,11 @@ public class HttpUtils {
         } else {
             HttpClientBuilder httpClientBuilder = HttpClients.custom().setConnectionManager(connMgr).setConnectionManagerShared(true)
                     .setDefaultRequestConfig(requestConfig);
-            if (httpClient == null)
+            if (httpClient == null) {
                 if (keepAlive) {
                     httpClientBuilder.setKeepAliveStrategy(keepAliveStrategy);
                 }
+            }
             httpClient = httpClientBuilder.build();
             return httpClient;
         }
@@ -227,10 +233,11 @@ public class HttpUtils {
         if (params != null) {
             int i = 0;
             for (String key : params.keySet()) {
-                if (i == 0)
+                if (i == 0) {
                     param.append("?");
-                else
+                } else {
                     param.append("&");
+                }
                 param.append(key).append("=").append(params.get(key));
                 i++;
             }
