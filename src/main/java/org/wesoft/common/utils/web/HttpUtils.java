@@ -18,6 +18,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
@@ -56,7 +57,7 @@ import java.util.Map;
  */
 public class HttpUtils {
 
-    private static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
 
     private static PoolingHttpClientConnectionManager connMgr;
     private static RequestConfig requestConfig;
@@ -78,7 +79,7 @@ public class HttpUtils {
     }
 
     private static class Holder {
-        private static HttpUtils instance = new HttpUtils();
+        private static final HttpUtils instance = new HttpUtils();
     }
 
     @Builder
@@ -95,6 +96,7 @@ public class HttpUtils {
         private int connectionRequestTimeout = 2000;
         @Builder.Default
         private int validateAfterInactivity = 30000;
+
     }
 
     private void initPool(HttpUtilsConfig config) {
@@ -125,23 +127,41 @@ public class HttpUtils {
     /**
      * 获取 CloseableHttpClient
      *
+     * @param url       URL
+     * @param keepAlive keepAlive
+     * @return CloseableHttpClient
+     */
+    private CloseableHttpClient getCloseableHttpClient(String url, boolean keepAlive) {
+        if (url.startsWith("https")) {
+            if (sslHttpClient == null) {
+                HttpClientBuilder httpClientBuilder = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory())
+                        .setConnectionManager(connMgr).setConnectionManagerShared(true).setDefaultRequestConfig(requestConfig);
+                if (keepAlive) {
+                    httpClientBuilder.setKeepAliveStrategy(keepAliveStrategy);
+                }
+                sslHttpClient = httpClientBuilder.build();
+            }
+            return sslHttpClient;
+        } else {
+            HttpClientBuilder httpClientBuilder = HttpClients.custom().setConnectionManager(connMgr).setConnectionManagerShared(true)
+                    .setDefaultRequestConfig(requestConfig);
+            if (httpClient == null)
+                if (keepAlive) {
+                    httpClientBuilder.setKeepAliveStrategy(keepAliveStrategy);
+                }
+            httpClient = httpClientBuilder.build();
+            return httpClient;
+        }
+    }
+
+    /**
+     * 获取 CloseableHttpClient
+     *
      * @param url URL
      * @return CloseableHttpClient
      */
     private CloseableHttpClient getCloseableHttpClient(String url) {
-        if (url.startsWith("https")) {
-            if (sslHttpClient == null)
-                sslHttpClient = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory())
-                        .setConnectionManager(connMgr).setConnectionManagerShared(true).setDefaultRequestConfig(requestConfig)
-                        .setKeepAliveStrategy(keepAliveStrategy).build();
-            return sslHttpClient;
-        } else {
-            if (httpClient == null)
-                httpClient = HttpClients.custom().setConnectionManager(connMgr).setConnectionManagerShared(true)
-                        .setDefaultRequestConfig(requestConfig)
-                        .setKeepAliveStrategy(keepAliveStrategy).build();
-            return httpClient;
-        }
+        return getCloseableHttpClient(url, true);
     }
 
     /**
@@ -153,9 +173,33 @@ public class HttpUtils {
         return doGet(url, new HashMap<>(), null);
     }
 
+    /**
+     * 发送 GET 请求
+     *
+     * @param url       url
+     * @param keepAlive keepAlive
+     */
+    public JSONObject doGet(String url, boolean keepAlive) {
+        return doGet(url, new HashMap<>(), null, keepAlive);
+    }
 
+    /**
+     * 发送 GET 请求
+     *
+     * @param url       url
+     * @param keepAlive keepAlive
+     */
+    public JSONObject doGet(String url, Map<String, String> headers, boolean keepAlive) {
+        return doGet(url, null, headers, keepAlive);
+    }
+
+    /**
+     * 发送 GET 请求
+     *
+     * @param url url
+     */
     public JSONObject doGet(String url, Map<String, String> headers) {
-        return doGet(url, null, headers);
+        return doGet(url, null, headers, true);
     }
 
     /**
@@ -166,6 +210,18 @@ public class HttpUtils {
      * @return JSONObject
      */
     public JSONObject doGet(String url, Map<String, Object> params, Map<String, String> headers) {
+        return doGet(url, params, headers, true);
+    }
+
+    /**
+     * 发送 GET 请求
+     *
+     * @param url       url
+     * @param params    参数
+     * @param keepAlive keepAlive
+     * @return JSONObject
+     */
+    public JSONObject doGet(String url, Map<String, Object> params, Map<String, String> headers, boolean keepAlive) {
         String apiUrl = url;
         StringBuffer param = new StringBuffer();
         if (params != null) {
@@ -182,7 +238,7 @@ public class HttpUtils {
         apiUrl += param;
         String httpStr = null;
         int statusCode = 0;
-        CloseableHttpClient httpClient = getCloseableHttpClient(apiUrl);
+        CloseableHttpClient httpClient = getCloseableHttpClient(apiUrl, keepAlive);
 
         HttpGet httpGet = new HttpGet(apiUrl);
         httpGet.setConfig(requestConfig);
@@ -225,12 +281,35 @@ public class HttpUtils {
     /**
      * 发送 POST 请求
      *
+     * @param url       url
+     * @param keepAlive keepAlive
+     * @return JSONObject
+     */
+    public JSONObject doPost(String url, boolean keepAlive) {
+        return doPost(url, new HashMap<>(), new HashMap<>(), keepAlive);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
      * @param url     url
      * @param params  params
      * @param headers headers
      */
     public JSONObject doPost(String url, Map<String, Object> params, Map<String, String> headers) {
-        CloseableHttpClient httpClient = getCloseableHttpClient(url);
+        return doPost(url, params, headers, true);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
+     * @param url       url
+     * @param params    params
+     * @param headers   headers
+     * @param keepAlive keepAlive
+     */
+    public JSONObject doPost(String url, Map<String, Object> params, Map<String, String> headers, boolean keepAlive) {
+        CloseableHttpClient httpClient = getCloseableHttpClient(url, keepAlive);
         String httpStr = null;
         int statusCode = 0;
         HttpPost httpPost = new HttpPost(url);
@@ -279,10 +358,21 @@ public class HttpUtils {
      * 发送 POST 请求
      *
      * @param url       url
-     * @param jsonArray JSONArray 对象
+     * @param jsonArray JSONArray
      */
     public JSONObject doPost(String url, JSONArray jsonArray) {
         return doPost(url, jsonArray.toJSONString(), null);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
+     * @param url       url
+     * @param jsonArray JSONArray
+     * @param keepAlive keepAlive
+     */
+    public JSONObject doPost(String url, JSONArray jsonArray, boolean keepAlive) {
+        return doPost(url, jsonArray.toJSONString(), null, keepAlive);
     }
 
     /**
@@ -293,6 +383,17 @@ public class HttpUtils {
      */
     public JSONObject doPost(String url, JSONObject jsonObject) {
         return doPost(url, jsonObject.toJSONString(), null);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
+     * @param url        url
+     * @param jsonObject JSONObject
+     * @param keepAlive  keepAlive
+     */
+    public JSONObject doPost(String url, JSONObject jsonObject, boolean keepAlive) {
+        return doPost(url, jsonObject.toJSONString(), null, keepAlive);
     }
 
     /**
@@ -309,12 +410,36 @@ public class HttpUtils {
     /**
      * 发送 POST 请求
      *
+     * @param url       url
+     * @param jsonArray JSONObject
+     * @param headers   headers
+     * @param keepAlive keepAlive
+     */
+    public JSONObject doPost(String url, JSONArray jsonArray, Map<String, String> headers, boolean keepAlive) {
+        return doPost(url, jsonArray.toJSONString(), headers, keepAlive);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
      * @param url        url
      * @param jsonObject JSONObject
      * @param headers    headers
      */
     public JSONObject doPost(String url, JSONObject jsonObject, Map<String, String> headers) {
         return doPost(url, jsonObject.toJSONString(), headers);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
+     * @param url        url
+     * @param jsonObject JSONObject
+     * @param headers    headers
+     * @param keepAlive  keepAlive
+     */
+    public JSONObject doPost(String url, JSONObject jsonObject, Map<String, String> headers, boolean keepAlive) {
+        return doPost(url, jsonObject.toJSONString(), headers, keepAlive);
     }
 
     /**
@@ -351,7 +476,19 @@ public class HttpUtils {
      * @param headers headers
      */
     private JSONObject doPost(String url, Object json, Map<String, String> headers) {
-        CloseableHttpClient httpClient = getCloseableHttpClient(url);
+        return doPost(url, json, headers, true);
+    }
+
+    /**
+     * 发送 POST 请求
+     *
+     * @param url       url
+     * @param json      JSONObject
+     * @param headers   headers
+     * @param keepAlive keepAlive
+     */
+    private JSONObject doPost(String url, Object json, Map<String, String> headers, boolean keepAlive) {
+        CloseableHttpClient httpClient = getCloseableHttpClient(url, keepAlive);
         String httpStr = null;
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(requestConfig);
